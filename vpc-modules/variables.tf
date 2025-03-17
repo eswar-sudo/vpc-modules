@@ -4,12 +4,6 @@ variable "vpc_cidr" {
   default     = "10.25.0.0/16"
 }
 
-variable "region" {
-  description = "AWS region"
-  type        = string
- # default     = "us-east-1"
-}
-
 variable "azs" {
   description = "List of availability zones"
   type        = list(string)
