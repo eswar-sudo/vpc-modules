@@ -1,6 +1,3 @@
-provider "aws" {
-  region = "us-east-1" # Ensure this is set correctly
-}
 module "vpc" {
   source    = "./modules/vpc"
   vpc_cidr  = var.vpc_cidr
