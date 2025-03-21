@@ -8,6 +8,6 @@ variable "region" {
  }
 
 variable "vpc_name" {
-  desccription = "Name of the VPC"
-  typr= string
+  description = "Name of the VPC"
+  type= string
 }
