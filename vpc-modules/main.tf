@@ -10,17 +10,20 @@ module "subnets" {
   vpc_id   = module.vpc.vpc_id
   azs      = var.azs
   vpc_cidr = var.vpc_cidr
+  vpc_name = var.vpc_name
 }
 
 module "nat" {
   source              = "./modules/nat"
   public_subnet_ids   = module.subnets.public_subnet_ids
   single_nat_gateway  = var.single_nat_gateway
+  vpc_name = var.vpc_name
 }
 
 module "routes" {
   source            = "./modules/routes"
   vpc_id           = module.vpc.vpc_id
+  vpc_name = var.vpc_name
   public_subnet_ids = module.subnets.public_subnet_ids
   private_subnet_ids = module.subnets.private_subnet_ids
   igw_id           = module.vpc.igw_id
