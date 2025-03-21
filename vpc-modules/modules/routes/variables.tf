@@ -25,3 +25,8 @@ variable "single_nat_gateway" {
 variable "azs" { 
  type = list(string) 
  }
+
+ variable "vpc_name" {
+     type = string
+
+}

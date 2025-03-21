@@ -6,7 +6,7 @@ resource "aws_subnet" "public" {
   availability_zone = var.azs[count.index]
   map_public_ip_on_launch = true
   tags = { 
-     Name = "sn-public-subnet-${var.azs[count.index]}" 
+     Name = "${var.vpc_name}-public-subnet-${var.azs[count.index]}" 
    }
 }
 
@@ -16,6 +16,6 @@ resource "aws_subnet" "private" {
   cidr_block = cidrsubnet(var.vpc_cidr, 4, count.index + length(var.azs))
   availability_zone = var.azs[count.index]
   tags = { 
-    Name = "sn-private-subnet-${var.azs[count.index]}" 
+    Name = "${var.vpc_name}-private-subnet-${var.azs[count.index]}" 
     }
 }

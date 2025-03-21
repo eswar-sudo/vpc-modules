@@ -2,7 +2,7 @@
 resource "aws_route_table" "public" {
   vpc_id = var.vpc_id
   tags = { 
-    Name = "sn-public-route-table" 
+    Name = "${var.vpc_name}-public-route-table" 
    }
 }
 
@@ -22,7 +22,7 @@ resource "aws_route_table" "private" {
   count = length(var.azs)
   vpc_id = var.vpc_id
   tags = { 
-    Name = "sn-private-route-table-${var.azs[count.index]}" 
+    Name = "${var.vpc_name}-private-route-table-${var.azs[count.index]}" 
    }
 }
 
