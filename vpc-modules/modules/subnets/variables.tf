@@ -1,4 +1,3 @@
-
 variable "vpc_id" {
  type = string 
 }
@@ -13,5 +12,8 @@ variable "vpc_cidr" {
 
 variable "vpc_name" {
   type = string
+}
 
+variable "map_public_ip_on_launch" {
+  type = bool
 }
