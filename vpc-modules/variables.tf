@@ -23,6 +23,13 @@ variable "single_nat_gateway" {
   type        = bool
 }
 
+variable "public_destination_cidr_block" {
+  type = string
+}
+
+varibale "private_destination_cidr_block" {
+  type = string
+}
 variable "map_public_ip_on_launch" {
   type = bool
 }
