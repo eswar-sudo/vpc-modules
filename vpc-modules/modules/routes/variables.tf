@@ -34,6 +34,6 @@ variable "public_destination_cidr_block" {
   type = string
 }
 
-varibale "private_destination_cidr_block" {
+variable "private_destination_cidr_block" {
   type = string
 }
