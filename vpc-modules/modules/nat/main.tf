@@ -1,4 +1,3 @@
-
 resource "aws_eip" "nat" {
   count = var.single_nat_gateway ? 1 : length(var.public_subnet_ids)
   # vpc = true
