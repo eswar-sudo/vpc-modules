@@ -1,6 +1,6 @@
-region    	   = "us-east-2"
+region    	   = "us-east-1"
 vpc_cidr	   = "10.25.0.0/16"
-azs    		   = ["us-east-2a", "us-east-2b"]
+azs    		   = ["us-east-1a", "us-east-1b"]
 single_nat_gateway = true
 vpc_name	   = "aws"
 public_destination_cidr_block = "0.0.0.0/0"
