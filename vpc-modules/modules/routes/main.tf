@@ -8,7 +8,7 @@ resource "aws_route_table" "public" {
 
 resource "aws_route" "public_internet_access" {
   route_table_id = aws_route_table.public.id
-  destination_cidr_block = "0.0.0.0/0"
+  destination_cidr_block = var.public_destination_cidr_block
   gateway_id = var.igw_id
 }
 
@@ -29,7 +29,7 @@ resource "aws_route_table" "private" {
 resource "aws_route" "private_nat" {
   count = length(var.private_subnet_ids)
   route_table_id = aws_route_table.private[count.index].id
-  destination_cidr_block = "0.0.0.0/0"
+  destination_cidr_block = var.private_destination_cidr_block
   nat_gateway_id = var.nat_gateway_ids[var.single_nat_gateway ? 0 : count.index]
 }
 
