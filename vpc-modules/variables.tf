@@ -23,6 +23,10 @@ variable "single_nat_gateway" {
   type        = bool
 }
 
+variable "map_public_ip_on_launch" {
+  type = bool
+}
+
 variable "enable_dns_support"
   type = bool
 }
