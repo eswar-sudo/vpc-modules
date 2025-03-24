@@ -11,6 +11,7 @@ module "subnets" {
   vpc_id   = module.vpc.vpc_id
   azs      = var.azs
   vpc_cidr = var.vpc_cidr
+  map_public_ip_on_launch = var.map_public_ip_on_launch
   vpc_name = var.vpc_name
 }
 
