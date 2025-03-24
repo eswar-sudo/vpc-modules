@@ -27,17 +27,17 @@ variable "public_destination_cidr_block" {
   type = string
 }
 
-varibale "private_destination_cidr_block" {
+variable "private_destination_cidr_block" {
   type = string
 }
 variable "map_public_ip_on_launch" {
   type = bool
 }
 
-variable "enable_dns_support"
+variable "enable_dns_support" {
   type = bool
 }
 
-variable "enable_dns_hostnames"
+variable "enable_dns_hostnames" {
   type =bool
 }
