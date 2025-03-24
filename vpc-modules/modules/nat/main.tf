@@ -1,7 +1,7 @@
 
 resource "aws_eip" "nat" {
   count = var.single_nat_gateway ? 1 : length(var.public_subnet_ids)
-  domain = vpc
+  # vpc = true
   tags = { 
     Name = "${var.vpc_name}-eip-${count.index}"
    }
