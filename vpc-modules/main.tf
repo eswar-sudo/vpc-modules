@@ -28,6 +28,8 @@ module "routes" {
   vpc_name = var.vpc_name
   public_subnet_ids = module.subnets.public_subnet_ids
   private_subnet_ids = module.subnets.private_subnet_ids
+  public_destination_cidr_block = var.public_destination_cidr_block
+  private_destination_cidr_block = var.private_destination_cidr_block
   igw_id           = module.vpc.igw_id
   nat_gateway_ids  = module.nat.nat_gateway_ids
   single_nat_gateway  = var.single_nat_gateway
