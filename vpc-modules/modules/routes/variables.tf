@@ -27,6 +27,13 @@ variable "azs" {
  }
 
  variable "vpc_name" {
-     type = string
+   type = string
+}
 
+variable "public_destination_cidr_block" {
+  type = string
+}
+
+varibale "private_destination_cidr_block" {
+  type = string
 }
