@@ -1,4 +1,3 @@
-
 resource "aws_subnet" "public" {
   count = length(var.azs)
   vpc_id = var.vpc_id
