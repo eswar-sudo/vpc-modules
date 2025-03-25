@@ -25,3 +25,15 @@ variable "single_nat_gateway" {
 variable "azs" { 
  type = list(string) 
  }
+
+ variable "vpc_name" {
+   type = string
+}
+
+variable "public_destination_cidr_block" {
+  type = string
+}
+
+variable "private_destination_cidr_block" {
+  type = string
+}

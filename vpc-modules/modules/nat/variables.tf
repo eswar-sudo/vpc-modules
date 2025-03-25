@@ -1,4 +1,3 @@
-
 variable "public_subnet_ids" { 
   type = list(string) 
  }
@@ -6,3 +5,7 @@ variable "public_subnet_ids" {
 variable "single_nat_gateway" {
  type = bool 
  }
+
+variable "vpc_name" {
+ type =string
+}
