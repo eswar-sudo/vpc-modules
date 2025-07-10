@@ -33,11 +33,11 @@ jobs:
             -d '{
               "id": "my-stack-id",
               "name": "My Stack from GHA",
-              "repository": "your-org/your-repo",
+              "repository": "https://github.com/eswar21-sudo/tgw.git",
               "branch": "main",
               "space": "root",
               "terraform_version": "1.5.0",
-              "project_root": ".",
+              "project_root": "tgw-module",
               "runner_image": "public.ecr.aws/spacelift/terraform:latest",
               "autodeploy": true
             }'
