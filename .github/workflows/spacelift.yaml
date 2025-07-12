@@ -19,7 +19,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq curl
 
-          # Get token
+          # Get Spacelift token
+          echo "Fetching token..."
           TOKEN=$(curl -s -X POST https://auth.spacelift.io/oauth/token \
             -H "Content-Type: application/json" \
             -d '{
@@ -29,39 +30,46 @@ jobs:
               "audience": "https://spacelift.io"
             }' | jq -r .access_token)
 
-          # Define GraphQL Mutation
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "❌ Failed to fetch Spacelift token"
+            exit 1
+          fi
+          echo "✅ Token fetched"
+
+          # Define GraphQL mutation
           GRAPHQL_QUERY=$(cat <<EOF
-mutation CreateStack {
-  stackCreate(input: {
-    id: "my-stack-id",
-    name: "My Stack from GHA",
-    repository: {
-      repoURL: "https://github.com/eswar21-sudo/tgw.git",
-      branch: "main"
-    },
-    space: "root",
-    terraformConfig: {
-      projectRoot: "tgw-module",
-      terraformVersion: "1.5.0"
-    },
-    autodeploy: true,
-    runnerImage: "public.ecr.aws/spacelift/terraform:latest"
-  }) {
-    stack {
-      id
-      name
-    }
-  }
-}
+          mutation CreateStack {
+            stackCreate(input: {
+              id: "my-stack-id",
+              name: "My Stack from GHA",
+              repository: {
+                repoURL: "https://github.com/eswar21-sudo/tgw.git",
+                branch: "main"
+              },
+              space: "root",
+              terraformConfig: {
+                projectRoot: "tgw-module",
+                terraformVersion: "1.5.0"
+              },
+              autodeploy: true,
+              runnerImage: "public.ecr.aws/spacelift/terraform:latest"
+            }) {
+              stack {
+                id
+                name
+              }
+            }
+          }
 EOF
-)
+          )
 
-# Encode and send via GraphQL safely
-RESPONSE=$(jq -n --arg query "$GRAPHQL_QUERY" '{query: $query}' | \
-  curl -s -X POST https://eswar21-sudo.app.spacelift.io/graphql \
-    -H "Authorization: Bearer $TOKEN" \
-    -H "Content-Type: application/json" \
-    -d @-)
+          # Send GraphQL mutation
+          echo "Creating stack via GraphQL..."
+          RESPONSE=$(jq -n --arg query "$GRAPHQL_QUERY" '{query: $query}' | \
+            curl -s -X POST https://eswar21-sudo.app.spacelift.io/graphql \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "Content-Type: application/json" \
+              -d @-)
 
-echo "✅ Response from Spacelift:"
-echo "$RESPONSE"
+          echo "✅ Response from Spacelift:"
+          echo "$RESPONSE"
