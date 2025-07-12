@@ -10,18 +10,16 @@ jobs:
   create-stack:
     runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq curl
-
       - name: Create Spacelift Stack
         env:
           API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
           API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
         run: |
-          # Get OAuth Token
-          echo "Fetching Spacelift token..."
+          # Install dependencies
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+          # Get token
           TOKEN=$(curl -s -X POST https://auth.spacelift.io/oauth/token \
             -H "Content-Type: application/json" \
             -d '{
@@ -30,13 +28,6 @@ jobs:
               "client_secret": "'"$API_KEY_SECRET"'",
               "audience": "https://spacelift.io"
             }' | jq -r .access_token)
-
-          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
-            echo "❌ Failed to get token"
-            exit 1
-          fi
-
-          echo "✅ Token fetched"
 
           # Define GraphQL Mutation
           GRAPHQL_QUERY='
