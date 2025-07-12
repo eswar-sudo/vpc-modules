@@ -10,16 +10,18 @@ jobs:
   create-stack:
     runs-on: ubuntu-latest
     steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
       - name: Create Spacelift Stack
         env:
           API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
           API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
         run: |
-          # Install dependencies
-          sudo apt-get update
-          sudo apt-get install -y jq curl
-
-          # Get token
+          # Get OAuth Token
+          echo "Fetching Spacelift token..."
           TOKEN=$(curl -s -X POST https://auth.spacelift.io/oauth/token \
             -H "Content-Type: application/json" \
             -d '{
@@ -29,18 +31,44 @@ jobs:
               "audience": "https://spacelift.io"
             }' | jq -r .access_token)
 
-          # Create Stack
-          curl -X POST https://eswar21-sudo.app.spacelift.io/webhook/stacks \
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "❌ Failed to get token"
+            exit 1
+          fi
+
+          echo "✅ Token fetched"
+
+          # Define GraphQL Mutation
+          GRAPHQL_QUERY='
+          mutation CreateStack {
+            stackCreate(input: {
+              id: "my-stack-id",
+              name: "My Stack from GHA",
+              repository: {
+                repoURL: "https://github.com/eswar21-sudo/tgw.git",
+                branch: "main"
+              },
+              space: "root",
+              terraformConfig: {
+                projectRoot: "tgw-module",
+                terraformVersion: "1.5.0"
+              },
+              autodeploy: true,
+              runnerImage: "public.ecr.aws/spacelift/terraform:latest"
+            }) {
+              stack {
+                id
+                name
+              }
+            }
+          }'
+
+          # Send GraphQL request
+          echo "Sending GraphQL mutation to create stack..."
+          RESPONSE=$(curl -s -X POST https://eswar21-sudo.app.spacelift.io/graphql \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{
-              "id": "my-stack-id",
-              "name": "My Stack from GHA",
-              "repository": "https://github.com/eswar21-sudo/tgw.git",
-              "branch": "main",
-              "space": "root",
-              "terraform_version": "1.5.0",
-              "project_root": "tgw-module",
-              "runner_image": "public.ecr.aws/spacelift/terraform:latest",
-              "autodeploy": true
-            }'
+            -d '{"query":"'"$(echo "$GRAPHQL_QUERY" | tr '\n' ' ')"'"}')
+
+          echo "✅ Response from Spacelift:"
+          echo "$RESPONSE"
