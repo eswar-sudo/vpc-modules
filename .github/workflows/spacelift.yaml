@@ -1,3 +1,15 @@
+name: Create Spacelift Stack
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  create-stack:
+    runs-on: ubuntu-latest
+    steps:
 - name: Create Spacelift Stack
   env:
     API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
