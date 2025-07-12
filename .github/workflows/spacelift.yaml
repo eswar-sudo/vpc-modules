@@ -27,7 +27,7 @@ jobs:
             }' | jq -r .access_token)
 
           # Create Stack
-          curl -X POST https://your-account.spacelift.io/webhook/stacks \
+          curl -X POST https://eswar21-sudo.app.spacelift.io/webhook/stacks \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
             -d '{
