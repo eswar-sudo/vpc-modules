@@ -1,9 +1,6 @@
 name: Create Spacelift Stack
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -17,27 +14,52 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y jq curl
 
-      - name: Get Spacelift Token
+      - name: Validate Secrets Are Set
+        run: |
+          if [ -z "$API_KEY_ID" ]; then
+            echo "❌ ERROR: API_KEY_ID is not set"
+            exit 1
+          fi
+
+          if [ -z "$API_KEY_SECRET" ]; then
+            echo "❌ ERROR: API_KEY_SECRET is not set"
+            exit 1
+          fi
+
+          echo "✅ API credentials are set"
+
+      - name: Get Spacelift Access Token
         id: get_token
         run: |
-          TOKEN=$(curl -s -X POST https://auth.spacelift.io/oauth/token \
+          echo "Requesting Spacelift token..."
+          RESPONSE=$(curl -s -X POST https://auth.spacelift.io/oauth/token \
             -H "Content-Type: application/json" \
             -d '{
               "grant_type": "client_credentials",
               "client_id": "'"$API_KEY_ID"'",
               "client_secret": "'"$API_KEY_SECRET"'",
               "audience": "https://spacelift.io"
-            }' | jq -r .access_token)
+            }')
 
+          echo "🔄 Raw token response: $RESPONSE"
+          TOKEN=$(echo "$RESPONSE" | jq -r .access_token)
+
+          if [ "$TOKEN" == "null" ] || [ -z "$TOKEN" ]; then
+            echo "❌ ERROR: Failed to get access token"
+            exit 1
+          fi
+
+          echo "✅ Token received"
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
-      - name: Create Stack via GraphQL
+      - name: Create Spacelift Stack (GraphQL)
         run: |
+          echo "📦 Creating GraphQL mutation file..."
           echo '
           mutation CreateStack {
             stackCreate(input: {
@@ -57,7 +79,17 @@ jobs:
           }
           ' > create_stack.graphql
 
-          curl -s -X POST https://api.spacelift.io/graphql \
+          echo "🚀 Sending GraphQL mutation to create stack..."
+          RESPONSE=$(curl -s -X POST https://api.spacelift.io/graphql \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
-            -d "{\"query\": \"$(tr '\n' ' ' < create_stack.graphql)\"}"
+            -d "{\"query\": \"$(tr '\n' ' ' < create_stack.graphql)\"}")
+
+          echo "🔄 Response: $RESPONSE"
+
+          if echo "$RESPONSE" | grep -q '"errors"'; then
+            echo "❌ ERROR: Stack creation failed"
+            exit 1
+          fi
+
+          echo "✅ Stack creation complete"
