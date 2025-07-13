@@ -1,25 +1,27 @@
 name: Create Spacelift Stack
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
   create-stack:
     runs-on: ubuntu-latest
+    env:
+      API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
+      API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
+
     steps:
-      - name: Create Spacelift Stack
-        env:
-          API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
-          API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
         run: |
-          # Install dependencies
           sudo apt-get update
           sudo apt-get install -y jq curl
 
-          # Get token
+      - name: Get Spacelift Token
+        id: get_token
+        run: |
           TOKEN=$(curl -s -X POST https://auth.spacelift.io/oauth/token \
             -H "Content-Type: application/json" \
             -d '{
@@ -29,18 +31,30 @@ jobs:
               "audience": "https://spacelift.io"
             }' | jq -r .access_token)
 
-          # Create Stack
-          curl -X POST https://eswar21-sudo.app.spacelift.io/webhook/stacks \
-            -H "Authorization: Bearer $TOKEN" \
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Create Stack via GraphQL
+        run: |
+          echo '
+          mutation CreateStack {
+            stackCreate(input: {
+              id: "my-stack-id",
+              name: "My Stack from GHA",
+              repository: "eswar21-sudo/tgw",
+              branch: "main",
+              space: "root",
+              terraformVersion: "1.5.0",
+              projectRoot: "tgw-module",
+              autodeploy: true,
+              runnerImage: "public.ecr.aws/spacelift/terraform:latest"
+            }) {
+              id
+              name
+            }
+          }
+          ' > create_stack.graphql
+
+          curl -s -X POST https://api.spacelift.io/graphql \
+            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
-            -d '{
-              "id": "my-stack-id",
-              "name": "My Stack from GHA",
-              "repository": "https://github.com/eswar21-sudo/tgw.git",
-              "branch": "main",
-              "space": "root",
-              "terraform_version": "1.5.0",
-              "project_root": "tgw-module",
-              "runner_image": "public.ecr.aws/spacelift/terraform:latest",
-              "autodeploy": true
-            }'
+            -d "{\"query\": \"$(tr '\n' ' ' < create_stack.graphql)\"}"
