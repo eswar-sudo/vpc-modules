@@ -10,17 +10,16 @@ jobs:
   create-stack:
     runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq curl
-
       - name: Create Spacelift Stack
         env:
           API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
           API_KEY_SECRET: ${{ secrets.SPACELIFT_API_KEY_SECRET }}
         run: |
-          echo "🔐 Fetching Spacelift token..."
+          # Install dependencies
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+          # Get token
           TOKEN=$(curl -s -X POST https://auth.spacelift.io/oauth/token \
             -H "Content-Type: application/json" \
             -d '{
@@ -30,45 +29,18 @@ jobs:
               "audience": "https://spacelift.io"
             }' | jq -r .access_token)
 
-          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
-            echo "❌ Failed to fetch token"
-            exit 1
-          fi
-
-          echo "✅ Token fetched"
-
-          # Write GraphQL mutation to a temporary file
-          echo 'mutation CreateStack {
-            stackCreate(input: {
-              id: "my-stack-id",
-              name: "My Stack from GHA",
-              repository: {
-                repoURL: "https://github.com/eswar21-sudo/tgw.git",
-                branch: "main"
-              },
-              space: "root",
-              terraformConfig: {
-                projectRoot: "tgw-module",
-                terraformVersion: "1.5.0"
-              },
-              autodeploy: true,
-              runnerImage: "public.ecr.aws/spacelift/terraform:latest"
-            }) {
-              stack {
-                id
-                name
-              }
-            }
-          }' > mutation.graphql
-
-          # Convert to JSON payload and send request
-          QUERY=$(jq -Rs '{query: .}' < mutation.graphql)
-
-          echo "🚀 Sending request to Spacelift..."
-          RESPONSE=$(curl -s -X POST https://eswar21-sudo.app.spacelift.io/graphql \
+          # Create Stack
+          curl -X POST https://eswar21-sudo.app.spacelift.io/webhook/stacks \
             -H "Authorization: Bearer $TOKEN" \
             -H "Content-Type: application/json" \
-            -d "$QUERY")
-
-          echo "📬 Spacelift response:"
-          echo "$RESPONSE"
+            -d '{
+              "id": "my-stack-id",
+              "name": "My Stack from GHA",
+              "repository": "https://github.com/eswar21-sudo/tgw.git",
+              "branch": "main",
+              "space": "root",
+              "terraform_version": "1.5.0",
+              "project_root": "tgw-module",
+              "runner_image": "public.ecr.aws/spacelift/terraform:latest",
+              "autodeploy": true
+            }'
