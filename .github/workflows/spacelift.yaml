@@ -57,7 +57,7 @@ jobs:
           }
           ' > create_stack.graphql
 
-          curl -s -X POST https://eswar21-sudo.api.spacelift.io/graphql \
+          curl -s -X POST https://api.spacelift.io/graphql \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
             -H "Content-Type: application/json" \
             -d "{\"query\": \"$(tr '\n' ' ' < create_stack.graphql)\"}"
