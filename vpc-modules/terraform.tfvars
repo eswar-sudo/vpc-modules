@@ -1,7 +1,7 @@
 region     = "us-east-1"
 vpc_cidr   = "10.25.0.0/16"
 azs    	   = ["us-east-1a", "us-east-1b"]
-vpc_name   = "aws"
+vpc_name   = "eks-tf"
 single_nat_gateway   = true
 enable_dns_support   = true
 enable_dns_hostnames = true
